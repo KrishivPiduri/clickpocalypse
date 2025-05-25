@@ -1,56 +1,26 @@
-import React, { useEffect } from "react";
-import ThoughtformGeneratorPanel from "./ThoughtformGeneratorPanel";
+import React from "react";
+import { SockProvider } from "./store.jsx";
 import PlayerStatsPanel from "./PlayerStatsPanel";
-import InteractionDock from "./InteractionDock";
-import useNeurocrankStore from "./store";
+import GeneratorStatsPanel from "./GeneratorStatsPanel";
 
-const chatLog = [
-  "• You siphoned 120 CU from Player 2 using Neuro-Leech.",
-  "• Player 3 sent you a Firewall Boost.",
-  "• Sabotage Blocked! Mindburn deflected to Player 4."
-];
-
-const App = () => {
-  const tick = useNeurocrankStore((s) => s.tick);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      tick();
-    }, 100);
-    return () => clearInterval(interval);
-  }, [tick]);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-blue-950 to-purple-950 flex flex-col font-mono">
-      {/* Header */}
-      <header className="text-center py-6 text-2xl font-bold tracking-widest text-cyan-300 neon-glow drop-shadow-lg">
-        🧠 NEUROCRANK INTERFACE
-      </header>
-      {/* Main grid */}
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 px-4 md:px-12 pb-4">
-        <div>
-          <ThoughtformGeneratorPanel />
+function AppContent() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-blue-950 to-purple-950 flex flex-col font-mono">
+            <header className="text-center py-6 text-2xl font-bold tracking-widest text-yellow-200 neon-glow drop-shadow-lg">
+                🧦 THE SOCK MULTIVERSE
+            </header>
+            <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-12 pb-4">
+                <PlayerStatsPanel />
+                <GeneratorStatsPanel />
+            </main>
         </div>
-        <div>
-          <PlayerStatsPanel />
-        </div>
-      </main>
-      {/* Chat log */}
-      <section className="mx-4 md:mx-12 mb-2 bg-black/40 rounded-lg p-4 border border-cyan-700/30 text-cyan-200 text-sm font-mono shadow-inner">
-        <div className="mb-2 font-bold text-cyan-400">Chat Log:</div>
-        <ul className="space-y-1">
-          {chatLog.map((msg, idx) => (
-            <li key={idx} className="pl-2 border-l-4 border-cyan-700/40">{msg}</li>
-          ))}
-        </ul>
-      </section>
-      {/* Interaction Dock */}
-      <footer className="sticky bottom-0 z-10">
-        <InteractionDock />
-      </footer>
-    </div>
-  );
-};
+    );
+}
 
-export default App;
-
+export default function App() {
+    return (
+        <SockProvider>
+            <AppContent />
+        </SockProvider>
+    );
+}
