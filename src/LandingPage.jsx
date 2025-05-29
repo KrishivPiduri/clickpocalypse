@@ -3,51 +3,73 @@ import { Link } from "react-router-dom";
 
 export default function LandingPage() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-4">
-            <div className="w-full max-w-2xl flex flex-col items-center gap-12 p-8 bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-700 mt-12 animate-fade-in">
-                {/* Hero Section */}
-                <section className="flex flex-col items-center gap-4 w-full">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-lime-400 drop-shadow-lg text-center">
-                        Stop Memorizing. Start Conjugating.
-                    </h1>
-                    <p className="text-zinc-300 text-lg md:text-xl text-center max-w-xl">
-                        If you're serious about mastering Japanese verbs, you need more than a streak and a cartoon owl. This app is for people who want conjugation to become second nature—no hints, no hand-holding, just relentless, focused practice.
-                    </p>
-                    <Link to="/drill" className="w-full">
-                        <button className="w-full bg-lime-500 hover:bg-lime-400 text-black py-4 rounded-lg transition-colors font-bold text-2xl shadow-md mt-2 cursor-pointer">
-                            Start Drilling
-                        </button>
-                    </Link>
-                    <span className="text-zinc-400 text-sm mt-2">No hearts. No XP. No distractions. Just results.</span>
-                </section>
+        <div className="min-h-screen bg-white text-gray-800">
+            {/* Hero Section */}
+            <section className="text-center py-20 px-6 bg-gradient-to-b from-blue-100 to-white">
+                <h1 className="text-5xl font-bold mb-4">Understand Japanese Sentences, One Word at a Time</h1>
+                <p className="text-xl max-w-2xl mx-auto text-gray-700">
+                    Paste any Japanese sentence—even one you can't read—and get a visual, logical breakdown of how it works.
+                </p>
+                <p className="text-md text-gray-600 mt-4">
+                    (Need a sentence? Try copying something from a website or textbook.)
+                </p>
+                <Link to="/parse">
+                    <button className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
+                        Analyze a Japanese Sentence
+                    </button>
+                </Link>
+            </section>
 
-                {/* Duolingo Critique Section */}
-                <section className="w-full flex flex-col gap-2 bg-zinc-800 rounded-xl p-6 border border-zinc-700">
-                    <h2 className="text-2xl font-bold text-lime-300 mb-2">Why Not Duolingo?</h2>
-                    <p className="text-zinc-300 text-base">
-                        Duolingo is great if you want to feel productive in a couple minutes a day. But if you're truly serious about learning Japanese, you need more than a green owl and a daily streak. Duolingo is designed for casual learners who want to check a box, not for those who want to master a language at a deep level.
-                    </p>
-                    <p className="text-zinc-400 text-sm mt-2 italic">"Not affiliated with Duolingo. In fact, we think you deserve better."</p>
-                </section>
+            {/* How it Works Section */}
+            <section className="max-w-4xl mx-auto py-16 px-6">
+                <h2 className="text-3xl font-bold mb-6 text-center">How This Works</h2>
+                <p className="text-lg mb-4">
+                    Japanese sentences are incredibly logical. This tool represents Japanese sentences as <strong>trains</strong>, where each component is a train car or engine.
+                </p>
+                <p className="text-lg mb-4">
+                    <strong>Cars</strong> represent the supporting structure: things like objects, subjects, and other particles.
+                </p>
+                <p className="text-lg mb-4">
+                    <strong>Engines</strong> represent the action. Verbs and suffixes attach together like engine parts—each one propels the sentence forward.
+                </p>
+                <p className="text-lg mb-4">
+                    The very last engine is always the main action of the sentence—rendered in <strong>black</strong>. Others are rendered in <strong>white</strong>.
+                </p>
+                <p className="text-lg">
+                    This design was inspired by Cure Dolly, who teaches Japanese with a very logical approach.
+                </p>
+            </section>
 
-                {/* YouTube Formulaic Critique Section */}
-                <section className="w-full flex flex-col gap-2 bg-zinc-800 rounded-xl p-6 border border-zinc-700">
-                    <h2 className="text-2xl font-bold text-lime-300 mb-2">Beyond YouTube Formulas</h2>
-                    <p className="text-zinc-300 text-base">
-                        Most YouTube videos teach you a formulaic, step-by-step way to conjugate verbs. That's helpful at first, but do you think Japanese natives are running through a mental checklist every time they speak? Of course not. They just do it—naturally, effortlessly, and instantly.
+            {/* About Section */}
+            <section className="bg-gray-100 py-16 px-6">
+                <div className="max-w-3xl mx-auto">
+                    <h2 className="text-3xl font-bold mb-6 text-center">Why This Exists</h2>
+                    <p className="text-lg mb-4">
+                        As a programmer, I wanted a system that appealed to my logical brain. This tool breaks down Japanese sentences structurally and visually—like inspecting train blueprints.
                     </p>
-                </section>
+                    <p className="text-lg">
+                        I built this for learners like me. Hope it helps you too!
+                    </p>
+                </div>
+            </section>
 
-                {/* The Drill Philosophy Section */}
-                <section className="w-full flex flex-col gap-2 bg-zinc-800 rounded-xl p-6 border border-zinc-700">
-                    <h2 className="text-2xl font-bold text-lime-300 mb-2">Train Your Brain, Not Just Your Memory</h2>
-                    <p className="text-zinc-300 text-base">
-                        This drill is designed to help you build the muscle memory you need to conjugate Japanese verbs without thinking. In the beginning, it will be difficult. You might feel slow, and you might make mistakes. But if you keep going, it will become natural and easy—just like it is for native speakers.
-                    </p>
-                    <span className="text-zinc-400 text-sm mt-2">"The only way out is through."</span>
-                </section>
-            </div>
+            {/* Call to Action Again */}
+            <section className="text-center py-12 px-6">
+                <h2 className="text-2xl font-semibold mb-4">Ready to see how it works?</h2>
+                <Link to="/parse">
+                    <button className="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
+                        Try the Analyzer
+                    </button>
+                </Link>
+                <p className="text-sm text-gray-500 mt-2 italic">(Don't worry, you can use a sample sentence right away!)</p>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-gray-800 text-white text-center py-6 text-sm">
+                <p>
+                    Also check out the <Link to="/drill" className="underline hover:text-blue-300">Japanese verb conjugation drill</Link>—a small side tool that helps you master verb forms.
+                </p>
+            </footer>
         </div>
     );
 }
-
