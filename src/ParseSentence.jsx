@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TrainVisualizer from "./TrainVisualizer.jsx";
 
 const particleLegend = {
     'は': { label: 'Topic', color: 'bg-yellow-200', emoji: '🚩', desc: 'Marks the topic.' },
@@ -34,72 +35,70 @@ const Instructions = () => (
     </div>
 );
 
-// Engine component: white by default, black if isLast
-const Engine = ({ node, isLast, selectedId, setSelected }) => {
-    const style = isLast ? 'bg-black text-white' : 'bg-white text-black';
-    const handleClick = (e) => {
+export const Engine = ({ engine, isLast, selectedId, setSelected }) => {
+    // black engines will also carry a flag, engine.isBlack
+    const style = engine.isBlack
+        ? 'bg-black text-white'
+        : 'bg-white text-black';
+
+    const handleClick = e => {
         e.stopPropagation();
-        setSelected(selectedId === node.id ? null : node.id);
+        setSelected(selectedId === engine.id ? null : engine.id);
     };
+
     return (
-        <div className={`mx-2 ${selectedId === node.id ? 'border-dashed border-2 rounded-2xl' : ''}`}>
+        <div
+            className={`mx-2 ${selectedId === engine.id ? 'border-dashed border-2 rounded-2xl' : ''}`}
+            onClick={handleClick}
+        >
             <div
                 className={`flex flex-col items-center p-2 rounded-2xl shadow-lg ${style} cursor-pointer`}
-                onClick={handleClick}
             >
                 <span className="text-2xl">🚂</span>
-                <span className="mt-1 font-semibold">{node.text}</span>
-                <span className="text-xs italic">{node.eng}</span>
+                <span className="mt-1 font-semibold">{engine.text}</span>
+                {/* if you have an English gloss you can wire it here */}
+                {engine.eng && <span className="text-xs italic">{engine.eng}</span>}
             </div>
         </div>
     );
 };
 
-// Car component: wraps entire subtree, includes nested cars and engines
-const Car = ({ node, selectedId, setSelected }) => {
-    const legend = particleLegend[node.subtype] || { color: 'bg-gray-200', emoji: '🚃' };
-    const handleClick = (e) => {
+export const Car = ({ car, selectedId, setSelected, particleLegend }) => {
+    const legend = particleLegend[car.type] || { color: 'bg-gray-200', emoji: '🚃' };
+
+    const handleClick = e => {
         e.stopPropagation();
-        setSelected(selectedId === node.id ? null : node.id);
+        setSelected(selectedId === car.id ? null : car.id);
     };
-    // within modifier: separate cars, engines; ensure engines ordered: stems then suffix; suffix last
-    const mod = node.modifier;
-    let modCars = [];
-    let modEngines = [];
-    if (mod) {
-        modCars = mod.cars.filter(c => c.type === 'car');
-        modEngines = mod.cars.filter(c => c.type === 'engine');
-    }
+
+    // if there's a nested_train, split out its engines and cars
+    const nested = car.nested_train;
     return (
         <div className="mx-2 my-1">
-            <div className={`flex flex-row rounded-xl shadow ${legend.color} cursor-pointer`} onClick={handleClick}>
-                {mod && (
+            <div
+                className={`flex flex-row rounded-xl shadow ${legend.color} cursor-pointer`}
+                onClick={handleClick}
+            >
+                {/* render nested train inside this car */}
+                {nested && (
                     <div className="flex items-center px-2 pt-2">
-                        {modCars.map(c => (
-                            <Car key={c.id} node={c} selectedId={selectedId} setSelected={setSelected} />
-                        ))}
-                        <Engine
-                            node={mod}
-                            isLast={modEngines.length === 0}
+                        <SentenceVisualizer
+                            train={nested}
                             selectedId={selectedId}
                             setSelected={setSelected}
+                            particleLegend={particleLegend}
                         />
-                        {modEngines.map((eng, idx) => (
-                            <Engine
-                                key={eng.id}
-                                node={eng}
-                                isLast={idx === modEngines.length - 1}
-                                selectedId={selectedId}
-                                setSelected={setSelected}
-                            />
-                        ))}
                     </div>
                 )}
+
                 <div className="flex items-center p-2" onClick={handleClick}>
                     <span className="text-2xl mr-1">{legend.emoji}</span>
                     <div>
-                        <div className="font-medium">{node.text}</div>
-                        <div className="text-xs italic text-gray-700">{node.eng}</div>
+                        <div className="font-medium">{car.text}</div>
+                        {/* optional gloss */}
+                        {car.eng && (
+                            <div className="text-xs italic text-gray-700">{car.eng}</div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -107,27 +106,64 @@ const Car = ({ node, selectedId, setSelected }) => {
     );
 };
 
-// SentenceVisualizer: render cars first, then main stem engine, then suffix engines
-const SentenceVisualizer = ({ node, selectedId, setSelected }) => {
-    // separate cars and engines in main clause
-    const clauseCars = node.cars.filter(c => c.type === 'car');
-    const clauseEngines = node.cars.filter(c => c.type === 'engine');
+export const SentenceVisualizer = ({
+                                       train,
+                                       selectedId,
+                                       setSelected,
+                                       particleLegend
+                                   }) => {
+    // main black engine
+    const black = {
+        id: train.black_engine.position,
+        text: train.black_engine.text,
+        eng: train.black_engine.eng,
+        isBlack: true
+    };
+
+    // white engines (auxiliaries)
+    const whites = train.white_engines.map(w => ({
+        id: w.position,
+        text: w.text,
+        eng: w.eng,
+        isBlack: false
+    }));
+
+    // cars
+    const cars = train.cars.map(c => ({
+        id: c.position,
+        text: c.text,
+        eng: c.eng,
+        type: c.type,
+        nested_train: c.nested_train
+    }));
+
     return (
         <div className="flex flex-wrap items-center mt-6">
-            {clauseCars.map(car => (
-                <Car key={car.id} node={car} selectedId={selectedId} setSelected={setSelected} />
+            {/* cars in order */}
+            {cars.map(car => (
+                <Car
+                    key={car.id}
+                    car={car}
+                    selectedId={selectedId}
+                    setSelected={setSelected}
+                    particleLegend={particleLegend}
+                />
             ))}
+
+            {/* black engine */}
             <Engine
-                node={node}
-                isLast={clauseEngines.length === 0}
+                engine={black}
+                isLast={whites.length === 0}
                 selectedId={selectedId}
                 setSelected={setSelected}
             />
-            {clauseEngines.map((eng, idx) => (
+
+            {/* white engines */}
+            {whites.map((eng, idx) => (
                 <Engine
                     key={eng.id}
-                    node={eng}
-                    isLast={idx === clauseEngines.length - 1}
+                    engine={eng}
+                    isLast={idx === whites.length - 1}
                     selectedId={selectedId}
                     setSelected={setSelected}
                 />
@@ -136,25 +172,55 @@ const SentenceVisualizer = ({ node, selectedId, setSelected }) => {
     );
 };
 
-const Legend = () => (
-    <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Legend</h2>
-        <div className="grid grid-cols-2 gap-4">
-            {Object.entries(particleLegend).map(([key, { label, color, emoji }]) => (
-                <div key={key} className="flex items-center">
-                    <span className={`text-2xl mr-2 ${color} p-1 rounded`}>{emoji}</span>
-                    <span><strong>{key}</strong>: {label}</span>
+const Legend = () => {
+    // Role legend definitions matching visualizer
+    const roleLegend = [
+        { role: 'VERB_MAIN', label: 'Main Verb', emoji: '🚂', color: 'bg-black text-white' },
+        { role: 'VERB_AUX', label: 'Auxiliary Verb', emoji: '🚂', color: 'bg-white border border-gray-400 text-black' },
+        { role: 'NOUN', label: 'Noun', emoji: '🚃', color: 'bg-blue-300 text-black' },
+        { role: 'PROPN', label: 'Proper Noun', emoji: '🚃', color: 'bg-purple-300 text-black' },
+        { role: 'ADJ', label: 'Adjective', emoji: '✏️', color: 'bg-yellow-300 text-black' },
+        { role: 'ADV', label: 'Adverb', emoji: '⚡', color: 'bg-indigo-300 text-black' },
+        { role: 'PUNCT', label: 'Punctuation', emoji: '·', color: 'text-gray-600' }
+    ];
+
+    return (
+        <div className="p-4 bg-white shadow rounded mb-4">
+            <h3 className="text-lg font-semibold mb-2">Legend</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Token Role Legend */}
+                <div>
+                    <h4 className="font-semibold mb-1">Token Roles</h4>
+                    <ul>
+                        {roleLegend.map(({ role, label, emoji, color }) => (
+                            <li key={role} className="flex items-center mb-2">
+                                <span className={`${color} px-2 py-1 rounded mr-2`}>{emoji}</span>
+                                <span className="font-medium mr-1">{label}</span>
+                                <span className="text-sm text-gray-600">({role})</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
-            ))}
-            <div className="flex items-center">
-                <span className="text-2xl mr-2">🚂</span>
-                <span><strong>Engine</strong>: only the final engine in sequence is black; all others are white.</span>
+
+                {/* Particle Legend */}
+                <div>
+                    <h4 className="font-semibold mb-1">Particles</h4>
+                    <ul>
+                        {Object.entries(particleLegend).map(([particle, info]) => (
+                            <li key={particle} className="flex items-center mb-2">
+                                <span className={`${info.color} px-2 py-1 rounded mr-2`}>{info.emoji}</span>
+                                <span className="font-medium mr-1">{particle}</span>
+                                <span className="text-sm text-gray-600">{info.label}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
-);
-
-const Desc = ({ selectedId, descs }) => {
+    );
+};
+const Desc = ({ selectedId, descs, dict }) => {
+    console.log(dict)
     if (!selectedId) return (
         <div className="bg-gray-200 p-4 rounded-2xl my-4">
             <p className="text-xl font-semibold">Click on an engine or car to see description</p>
@@ -163,8 +229,8 @@ const Desc = ({ selectedId, descs }) => {
 
     const rawDesc = descs[selectedId];
     const lines = rawDesc.split('\n').filter(Boolean);
-
-    const details = [];
+    console.log(dict);
+    const details = [[{reading: dict.data[0].japanese[0].reading, meaning: dict.data.senses[0].english_definitions[0]},0]];
     let extraText = "";
 
     lines.forEach(line => {
@@ -181,13 +247,13 @@ const Desc = ({ selectedId, descs }) => {
             <div className="space-y-2">
                 {details.map(({ label, value }, idx) => (
                     <div key={idx} className="flex gap-2">
-                        <span className="font-semibold text-gray-700">{label}:</span>
+                        <span className="font-bold text-gray-700">{label}:</span>
                         <span className="text-gray-900">{value}</span>
                     </div>
                 ))}
             </div>
             {extraText && (
-                <p className="mt-4 text-sm text-gray-600 italic">{extraText.trim()}</p>
+                <p className="mt-4 font-bold text-gray-600">{extraText.trim()}</p>
             )}
         </div>
     );
@@ -247,6 +313,7 @@ export default function App() {
     const [selectedId, setSelected] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [dict, setDict] = useState({});
 
     const handleChange = (e) => {
         setInput(e.target.value);
@@ -273,7 +340,7 @@ export default function App() {
             <h1 className="text-3xl font-bold mb-4">Japanese Sentence Train Visualizer</h1>
             <Instructions />
             <Legend />
-
+            <label className="font-bold">Enter your sentence here:</label>
             <div className="flex mb-4">
                 <input
                     type="text"
@@ -296,13 +363,13 @@ export default function App() {
                     Error: {error}
                 </div>
             )}
-
             {parsed && (
                 <>
-                    <SentenceVisualizer node={parsed} selectedId={selectedId} setSelected={setSelected} />
-                    <Desc selectedId={selectedId} descs={descs} />
+                    <p className="my-4">Click on a box to view information about it</p>
+                    <TrainVisualizer segments={parsed} particleLegend={particleLegend} descriptions={descs} setSelectedId={setSelected} setDict={setDict} dict={dict} />
                 </>
             )}
+            <Desc descs={descs} selectedId={selectedId} dict={dict} />
         </div>
     );
 }
